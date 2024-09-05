@@ -14,6 +14,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { Markdown } from '@/components/markdown';
+import { convertPdfToXml } from './file.convert.helpers';
 
 const getTextFromDataUrl = (dataUrl: string) => {
     const base64 = dataUrl.split(',')[1];
@@ -43,17 +44,19 @@ function TextFilePreview({ file }: { file: File }) {
 export default function Home() {
     const { messages, input, handleSubmit, handleInputChange, isLoading } =
         useChat({
-            onError: () =>
+            onError: (error) => {
                 toast.error(
                     "You've been rate limited, please try again later!"
-                ),
+                );
+                console.error(error);
+            },
         });
 
     const [files, setFiles] = useState<FileList | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
     const [isDragging, setIsDragging] = useState(false);
 
-    const handlePaste = (event: React.ClipboardEvent) => {
+    const handlePaste = async (event: React.ClipboardEvent) => {
         const items = event.clipboardData?.items;
 
         if (items) {
@@ -65,8 +68,8 @@ export default function Home() {
                 const validFiles = files.filter(
                     (file) =>
                         file.type.startsWith('image/') ||
-                        file.type.startsWith('text/') ||
-                        file.type.startsWith('application/pdf')
+                        file.type.startsWith('text/') || 
+                        file.type.toLocaleLowerCase().endsWith('/pdf')
                 );
 
                 if (validFiles.length === files.length) {
@@ -90,7 +93,7 @@ export default function Home() {
         setIsDragging(false);
     };
 
-    const handleDrop = (event: DragEvent<HTMLDivElement>) => {
+    const handleDrop = async (event: DragEvent<HTMLDivElement>) => {
         event.preventDefault();
         const droppedFiles = event.dataTransfer.files;
         const droppedFilesArray = Array.from(droppedFiles);
@@ -98,8 +101,8 @@ export default function Home() {
             const validFiles = droppedFilesArray.filter(
                 (file) =>
                     file.type.startsWith('image/') ||
-                    file.type.startsWith('text/') ||
-                    file.type.startsWith('application/pdf')
+                    file.type.startsWith('text/') || 
+                    file.type.toLocaleLowerCase().endsWith('/pdf')
             );
 
             if (validFiles.length === droppedFilesArray.length) {
