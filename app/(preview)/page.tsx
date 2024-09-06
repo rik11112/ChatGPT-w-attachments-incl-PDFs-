@@ -7,7 +7,7 @@ import {
     UserIcon,
     VercelIcon,
 } from '@/components/icons';
-import { useChat } from 'ai/react';
+import { Message, useChat } from 'ai/react';
 import { DragEvent, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 // @ts-ignore - it is installed and working, but somehow the import gives a warning
@@ -40,6 +40,21 @@ function TextFilePreview({ file }: { file: File }) {
     );
 }
 
+function PdfFilePreview({ file }: { file: { name?: string } }) {
+    return (
+        <div
+            key={file.name}
+            className="text-xs overflow-hidden text-zinc-400 border p-2 rounded-md dark:bg-zinc-800 dark:border-zinc-700 mb-3"
+        >
+            {/* TODO: use FontAwesomeIcon */}
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+                <path d="M64 464l48 0 0 48-48 0c-35.3 0-64-28.7-64-64L0 64C0 28.7 28.7 0 64 0L229.5 0c17 0 33.3 6.7 45.3 18.7l90.5 90.5c12 12 18.7 28.3 18.7 45.3L384 304l-48 0 0-144-80 0c-17.7 0-32-14.3-32-32l0-80L64 48c-8.8 0-16 7.2-16 16l0 384c0 8.8 7.2 16 16 16zM176 352l32 0c30.9 0 56 25.1 56 56s-25.1 56-56 56l-16 0 0 32c0 8.8-7.2 16-16 16s-16-7.2-16-16l0-48 0-80c0-8.8 7.2-16 16-16zm32 80c13.3 0 24-10.7 24-24s-10.7-24-24-24l-16 0 0 48 16 0zm96-80l32 0c26.5 0 48 21.5 48 48l0 64c0 26.5-21.5 48-48 48l-32 0c-8.8 0-16-7.2-16-16l0-128c0-8.8 7.2-16 16-16zm32 128c8.8 0 16-7.2 16-16l0-64c0-8.8-7.2-16-16-16l-16 0 0 96 16 0zm80-112c0-8.8 7.2-16 16-16l48 0c8.8 0 16 7.2 16 16s-7.2 16-16 16l-32 0 0 32 32 0c8.8 0 16 7.2 16 16s-7.2 16-16 16l-32 0 0 48c0 8.8-7.2 16-16 16s-16-7.2-16-16l0-64 0-64z" />
+            </svg>
+            {file.name ?? 'PDF file'}
+        </div>
+    );
+}
+
 export default function Home() {
     const { messages, input, handleSubmit, handleInputChange, isLoading } =
         useChat({
@@ -67,7 +82,7 @@ export default function Home() {
                 const validFiles = files.filter(
                     (file) =>
                         file.type.startsWith('image/') ||
-                        file.type.startsWith('text/') || 
+                        file.type.startsWith('text/') ||
                         file.type.toLocaleLowerCase().endsWith('/pdf')
                 );
 
@@ -100,7 +115,7 @@ export default function Home() {
             const validFiles = droppedFilesArray.filter(
                 (file) =>
                     file.type.startsWith('image/') ||
-                    file.type.startsWith('text/') || 
+                    file.type.startsWith('text/') ||
                     file.type.toLocaleLowerCase().endsWith('/pdf')
             );
 
@@ -153,7 +168,7 @@ export default function Home() {
             <div className="flex flex-col justify-between gap-4">
                 {messages.length > 0 ? (
                     <div className="flex flex-col gap-2 h-full w-dvw items-center overflow-y-scroll">
-                        {messages.map((message, index) => (
+                        {messages.map((message: Message, index) => (
                             <motion.div
                                 key={message.id}
                                 className={`flex flex-row gap-2 px-4 w-full md:w-[500px] md:px-0 ${
@@ -176,25 +191,51 @@ export default function Home() {
                                     </div>
                                     <div className="flex flex-row gap-2">
                                         {message.experimental_attachments?.map(
-                                            (attachment) =>
-                                                attachment.contentType?.startsWith(
-                                                    'image'
-                                                ) ? (
-                                                    <img
-                                                        className="rounded-md w-40 mb-3"
-                                                        key={attachment.name}
-                                                        src={attachment.url}
-                                                        alt={attachment.name}
-                                                    />
-                                                ) : attachment.contentType?.startsWith(
-                                                      'text'
-                                                  ) ? (
-                                                    <div className="text-xs w-40 h-24 overflow-hidden text-zinc-400 border p-2 rounded-md dark:bg-zinc-800 dark:border-zinc-700 mb-3">
-                                                        {getTextFromDataUrl(
-                                                            attachment.url
-                                                        )}
-                                                    </div>
-                                                ) : null
+                                            (attachment) => {
+                                                if (
+                                                    attachment.contentType?.startsWith(
+                                                        'image'
+                                                    )
+                                                ) {
+                                                    return (
+                                                        <img
+                                                            className="rounded-md w-40 mb-3"
+                                                            key={
+                                                                attachment.name
+                                                            }
+                                                            src={attachment.url}
+                                                            alt={
+                                                                attachment.name
+                                                            }
+                                                        />
+                                                    );
+                                                } else if (
+                                                    attachment.contentType?.startsWith(
+                                                        'text'
+                                                    )
+                                                ) {
+                                                    return (
+                                                        <div
+                                                            key={
+                                                                attachment.name
+                                                            }
+                                                            className="text-xs w-40 h-24 overflow-hidden text-zinc-400 border p-2 rounded-md dark:bg-zinc-800 dark:border-zinc-700 mb-3"
+                                                        >
+                                                            {getTextFromDataUrl(
+                                                                attachment.url
+                                                            )}
+                                                        </div>
+                                                    );
+                                                } else if (
+                                                    attachment.contentType?.endsWith(
+                                                        'pdf'
+                                                    )
+                                                ) {
+                                                    <PdfFilePreview file={attachment} />
+                                                } else {
+                                                    return null;
+                                                }
+                                            }
                                         )}
                                     </div>
                                 </div>
@@ -261,13 +302,40 @@ export default function Home() {
                     <AnimatePresence>
                         {files && files.length > 0 && (
                             <div className="flex flex-row gap-2 absolute bottom-12 px-4 w-full md:w-[500px] md:px-0">
-                                {Array.from(files).map((file) => 
-                                    file.type.startsWith('image') ? (
-                                        <div key={file.name}>
-                                            <motion.img
-                                                src={URL.createObjectURL(file)}
-                                                alt={file.name}
-                                                className="rounded-md w-16"
+                                {Array.from(files).map((file) => {
+                                    if (file.type.startsWith('image')) {
+                                        return (
+                                            <div key={file.name}>
+                                                <motion.img
+                                                    src={URL.createObjectURL(
+                                                        file
+                                                    )}
+                                                    alt={file.name}
+                                                    className="rounded-md w-16"
+                                                    initial={{
+                                                        scale: 0.8,
+                                                        opacity: 0,
+                                                    }}
+                                                    animate={{
+                                                        scale: 1,
+                                                        opacity: 1,
+                                                    }}
+                                                    exit={{
+                                                        y: -10,
+                                                        scale: 1.1,
+                                                        opacity: 0,
+                                                        transition: {
+                                                            duration: 0.2,
+                                                        },
+                                                    }}
+                                                />
+                                            </div>
+                                        );
+                                    } else if (file.type.startsWith('text')) {
+                                        return (
+                                            <motion.div
+                                                key={file.name}
+                                                className="text-[8px] leading-1 w-28 h-16 overflow-hidden text-zinc-500 border p-2 rounded-lg bg-white dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-400"
                                                 initial={{
                                                     scale: 0.8,
                                                     opacity: 0,
@@ -284,25 +352,41 @@ export default function Home() {
                                                         duration: 0.2,
                                                     },
                                                 }}
-                                            />
-                                        </div>
-                                    ) : file.type.startsWith('text') ? (
-                                        <motion.div
-                                            key={file.name}
-                                            className="text-[8px] leading-1 w-28 h-16 overflow-hidden text-zinc-500 border p-2 rounded-lg bg-white dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-400"
-                                            initial={{ scale: 0.8, opacity: 0 }}
-                                            animate={{ scale: 1, opacity: 1 }}
-                                            exit={{
-                                                y: -10,
-                                                scale: 1.1,
-                                                opacity: 0,
-                                                transition: { duration: 0.2 },
-                                            }}
-                                        >
-                                            <TextFilePreview file={file} />
-                                        </motion.div>
-                                    ) : null
-                                )}
+                                            >
+                                                <TextFilePreview file={file} />
+                                            </motion.div>
+                                        );
+                                    } else if (
+                                        file.type
+                                            .toLocaleLowerCase()
+                                            .endsWith('/pdf')
+                                    ) {
+                                        return (
+                                            <motion.div
+                                                key={file.name}
+                                                className="text-[8px] leading-1 w-28 h-16 overflow-hidden text-zinc-500 border p-2 rounded-lg bg-white dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-400"
+                                                initial={{
+                                                    scale: 0.8,
+                                                    opacity: 0,
+                                                }}
+                                                animate={{
+                                                    scale: 1,
+                                                    opacity: 1,
+                                                }}
+                                                exit={{
+                                                    y: -10,
+                                                    scale: 1.1,
+                                                    opacity: 0,
+                                                    transition: {
+                                                        duration: 0.2,
+                                                    },
+                                                }}
+                                            >
+                                                <PdfFilePreview file={file} />
+                                            </motion.div>
+                                        );
+                                    }
+                                })}
                             </div>
                         )}
                     </AnimatePresence>
