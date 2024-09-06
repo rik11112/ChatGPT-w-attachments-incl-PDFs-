@@ -5,8 +5,6 @@ import { convertToCoreMessages, streamText } from "ai";
 export async function POST(req: Request) {
     const { messages } = await req.json();
 
-    console.log(JSON.stringify(truncateStrings(messages), null, 2));
-
     const parsedMessages = await Promise.all(messages.map(async (message: any) => {
         if (message?.experimental_attachments?.length === 0) {
             return message;
@@ -20,9 +18,7 @@ export async function POST(req: Request) {
             }
 
             try {
-                console.log('Processing PDF attachment:', attachment.name);
                 const xmlFile = await processPdfDataUrl(attachment.url, attachment.name);
-                console.log('Processed PDF attachment:', attachment.name);
                 return {
                     name: attachment.name,
                     contentType: 'text/xml',
