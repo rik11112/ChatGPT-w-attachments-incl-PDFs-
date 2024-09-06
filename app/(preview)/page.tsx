@@ -231,7 +231,7 @@ export default function Home() {
                                                         'pdf'
                                                     )
                                                 ) {
-                                                    <PdfFilePreview file={attachment} />
+                                                    return <PdfFilePreview key={attachment.name} file={attachment} />
                                                 } else {
                                                     return null;
                                                 }
