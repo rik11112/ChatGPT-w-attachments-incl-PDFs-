@@ -1,33 +1,32 @@
 import { processPdfDataUrl } from "@/app/(preview)/file.convert.helpers";
 import { openai } from "@ai-sdk/openai";
 import { convertToCoreMessages, streamText } from "ai";
+import type { Message } from 'ai/react';
 
 export async function POST(req: Request) {
     const { messages } = await req.json();
 
-    const parsedMessages = await Promise.all(messages.map(async (message: any) => {
-        if (message?.experimental_attachments?.length === 0) {
+    const parsedMessages = await Promise.all(messages.map(async (message: Message) => {
+        if (!message?.experimental_attachments || message?.experimental_attachments.length  === 0) {
             return message;
         }
 
         const attachments = message.experimental_attachments;
 
-        const parsedAttachments = await Promise.all(attachments.map(async (attachment: any) => {
-            if (!attachment.contentType.endsWith('pdf')) {
+        const parsedAttachments = await Promise.all(attachments.map(async (attachment) => {
+            if (!attachment.contentType || !attachment.name || attachment.contentType.endsWith('pdf')) {
                 return attachment;
             }
 
-            try {
-                const xmlFile = await processPdfDataUrl(attachment.url, attachment.name);
-                return {
-                    name: attachment.name,
-                    contentType: 'text/xml',
-                    url: xmlFile,
-                };
-            } catch (e) {
-                console.error(e);
-                throw e;
-            }
+            console.log('starting PDF to XML conversion...');
+            const time = Date.now();
+            const xmlFile = await processPdfDataUrl(attachment.url, attachment.name);
+            console.log(`PDF to XML conversion took ${Date.now() - time}ms`);
+            return {
+                name: attachment.name,
+                contentType: 'text/xml',
+                url: xmlFile,
+            };
         }));
 
         return {
@@ -37,7 +36,7 @@ export async function POST(req: Request) {
     }));
 
     const result = await streamText({
-        model: openai('gpt-4o'),
+        model: openai('gpt-4o-mini'),
         system: 'do not respond on markdown or lists, keep your responses brief, you can ask the user to upload images or documents if it could help you understand the problem better',
         messages: convertToCoreMessages(parsedMessages),
     });
