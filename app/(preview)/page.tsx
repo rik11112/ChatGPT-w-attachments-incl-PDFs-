@@ -14,7 +14,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { Markdown } from '@/components/markdown';
-import { convertPdfToXml } from './file.convert.helpers';
 
 const getTextFromDataUrl = (dataUrl: string) => {
     const base64 = dataUrl.split(',')[1];

@@ -54,6 +54,12 @@ function fileToDataURL(file: File): Promise<string> {
     });
 }
 
+/**
+ * this function converts a PDF file data url into an XML file data url
+ * @param dataUrl data URL of the PDF file
+ * @param filename name of the PDF file
+ * @returns data URL of the XML file, converted from the PDF file
+ */
 export async function processPdfDataUrl(dataUrl: string, filename: string): Promise<string> {
     // Convert data URL to File
     const pdfFile = pdfDataURLToFile(dataUrl, filename);
