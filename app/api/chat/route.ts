@@ -14,7 +14,7 @@ export async function POST(req: Request) {
         const attachments = message.experimental_attachments;
 
         const parsedAttachments = await Promise.all(attachments.map(async (attachment) => {
-            if (!attachment.contentType || !attachment.name || attachment.contentType.endsWith('pdf')) {
+            if (!attachment.contentType || !attachment.name || !attachment.contentType.endsWith('pdf')) {
                 return attachment;
             }
 
