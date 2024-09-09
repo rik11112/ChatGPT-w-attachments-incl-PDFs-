@@ -31,10 +31,7 @@ export async function POST(req: Request) {
 
                     console.log('starting PDF to XML conversion...');
                     const time = Date.now();
-                    const xmlFile = await processPdfDataUrl(
-                        attachment.url,
-                        attachment.name
-                    );
+                    const xmlFile = await processPdfDataUrl(attachment.url);
                     console.log(
                         `PDF to XML conversion took ${Date.now() - time}ms`
                     );

@@ -1,32 +1,37 @@
-import pdf from 'pdf-parse';
-import { create } from 'xmlbuilder2';
+import libre from 'libreoffice-convert';
+import { promisify } from 'util';
+import fs from 'fs/promises';
+
+declare module 'libreoffice-convert' {
+    export function convertAsync(
+        input: Buffer,
+        outputExt: string,
+        filter: undefined
+    ): Promise<Buffer>;
+}
+
+// This is non-blocking, tested in /test-scripts/libreoffice/convertLibCheckNonBlocking.ts
+libre.convertAsync = promisify(libre.convert);
 
 /**
- * this function converts a PDF file data url of type application/pdf into an XML file data url of type text/xml
- * @param dataUrl data URL of the PDF file of type application/pdf
- * @param filename name of the PDF file
- * @returns data URL of the XML file of type text/xml, converted from the PDF file
+ * Processes a PDF data URL in parallel with this application using libre office and converts it to an XML data URL.
+ * 
+ * @param dataUrl - The PDF data URL to process.
+ * @returns A Promise that resolves to the XML data URL.
  */
-export async function processPdfDataUrl(dataUrl: string, filename: string): Promise<string> {
+export async function processPdfDataUrl(dataUrl: string): Promise<string> {
     // Step 1: Decode the PDF data URL
     const base64Data = dataUrl.split(',')[1];
-    const pdfData = Buffer.from(base64Data, 'base64');
+    const pdfBuffer = Buffer.from(base64Data, 'base64');
 
-    // Step 2: Parse the PDF
-    const pdfDataBuffer = await pdf(pdfData);
-    const textContent = pdfDataBuffer.text;
+    // Step 2: convert the PDF buffer to an XML buffer
+    const xmlBuffer = await libre.convertAsync(pdfBuffer, '.xml', undefined);
 
-    // Step 3: Convert the extracted information into XML format
-    const xmlObj = {
-        pdf: {
-            filename: filename,
-            content: textContent
-        }
-    };
-    const xml = create(xmlObj).end({ prettyPrint: true });
+    // @ts-ignore
+    await fs.writeFile(`output/test-${new Date().toISOString().replace(/[:.]/g, '-')}.xml`, xmlBuffer);
 
-    // Step 4: Encode the XML data into a data URL
-    const xmlDataUrl = `data:text/xml;base64,${Buffer.from(xml).toString('base64')}`;
+    // Step 3: Encode the XML buffer into a data URL
+    const xmlDataUrl = `data:text/xml;base64,${xmlBuffer.toString('base64')}`;
 
     return xmlDataUrl;
 }
