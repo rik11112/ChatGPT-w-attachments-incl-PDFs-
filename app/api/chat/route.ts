@@ -1,4 +1,4 @@
-import { processPdfDataUrl } from '@/app/(preview)/file.convert.helpers';
+import { processPdfDataUrl } from './file.convert.helpers';
 import { openai } from '@ai-sdk/openai';
 import { convertToCoreMessages, streamText } from 'ai';
 import type { Message } from 'ai/react';
