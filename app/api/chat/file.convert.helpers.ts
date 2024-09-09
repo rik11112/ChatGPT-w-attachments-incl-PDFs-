@@ -28,7 +28,7 @@ export async function processPdfDataUrl(dataUrl: string): Promise<string> {
     const xmlBuffer = await libre.convertAsync(pdfBuffer, '.xml', undefined);
 
     // @ts-ignore
-    await fs.writeFile(`output/test-${new Date().toISOString().replace(/[:.]/g, '-')}.xml`, xmlBuffer);
+    // await fs.writeFile(`output/test-${new Date().toISOString().replace(/[:.]/g, '-')}.xml`, xmlBuffer);
 
     // Step 3: Encode the XML buffer into a data URL
     const xmlDataUrl = `data:text/xml;base64,${xmlBuffer.toString('base64')}`;
