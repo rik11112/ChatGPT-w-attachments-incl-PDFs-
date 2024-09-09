@@ -1,5 +1,6 @@
 import pdf from 'pdf-parse';
 import { create } from 'xmlbuilder2';
+import fs from 'fs/promises';
 
 /**
  * this function converts a PDF file data url of type application/pdf into an XML file data url of type text/xml
@@ -24,6 +25,9 @@ export async function processPdfDataUrl(dataUrl: string, filename: string): Prom
         }
     };
     const xml = create(xmlObj).end({ prettyPrint: true });
+
+    // @ts-ignore
+    // await fs.writeFile(`output/test-${new Date().toISOString().replace(/[:.]/g, '-')}.xml`, xml);
 
     // Step 4: Encode the XML data into a data URL
     const xmlDataUrl = `data:text/xml;base64,${Buffer.from(xml).toString('base64')}`;
