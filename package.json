@@ -15,13 +15,12 @@
     "ai": "^3.2.43",
     "framer-motion": "^11.3.19",
     "next": "14.2.5",
-    "pdf-parse": "^1.1.1",
+    "pdfjs-dist": "^4.6.82",
     "react": "^18",
     "react-dom": "^18",
     "react-markdown": "^9.0.1",
     "remark-gfm": "^4.0.0",
-    "sonner": "^1.5.0",
-    "xmlbuilder2": "^3.1.1"
+    "sonner": "^1.5.0"
   },
   "devDependencies": {
     "@types/node": "^20",

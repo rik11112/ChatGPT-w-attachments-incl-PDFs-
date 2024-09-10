@@ -14,6 +14,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { Markdown } from '@/components/markdown';
+import { listPdfToXml } from './convert.helpers';
 
 const getTextFromDataUrl = (dataUrl: string) => {
     const base64 = dataUrl.split(',')[1];
@@ -86,12 +87,14 @@ export default function Home() {
                         file.type.toLocaleLowerCase().endsWith('/pdf')
                 );
 
-                if (validFiles.length === files.length) {
+                const convertedFiles = await listPdfToXml(validFiles);
+
+                if (convertedFiles.length === files.length) {
                     const dataTransfer = new DataTransfer();
-                    validFiles.forEach((file) => dataTransfer.items.add(file));
+                    convertedFiles.forEach((file) => dataTransfer.items.add(file));
                     setFiles(dataTransfer.files);
                 } else {
-                    toast.error('Only image and text files are allowed');
+                    toast.error('Only image, pdf and text files are allowed');
                 }
             }
         }
@@ -111,25 +114,31 @@ export default function Home() {
         event.preventDefault();
         const droppedFiles = event.dataTransfer.files;
         const droppedFilesArray = Array.from(droppedFiles);
-        if (droppedFilesArray.length > 0) {
-            const validFiles = droppedFilesArray.filter(
-                (file) =>
-                    file.type.startsWith('image/') ||
-                    file.type.startsWith('text/') ||
-                    file.type.toLocaleLowerCase().endsWith('/pdf')
-            );
 
-            if (validFiles.length === droppedFilesArray.length) {
-                const dataTransfer = new DataTransfer();
-                validFiles.forEach((file) => dataTransfer.items.add(file));
-                setFiles(dataTransfer.files);
-            } else {
-                toast.error('Only image and text files are allowed!');
-            }
+        if (droppedFilesArray.length <= 0) {
+            setIsDragging(false);
+            return;
+        }
 
-            setFiles(droppedFiles);
+        const validFiles = droppedFilesArray.filter(
+            (file) =>
+                file.type.startsWith('image/') ||
+                file.type.startsWith('text/') ||
+                file.type.toLocaleLowerCase().endsWith('/pdf')
+        );
+
+        const convertedFiles = await listPdfToXml(validFiles);
+
+        if (convertedFiles.length === droppedFilesArray.length) {
+            const dataTransfer = new DataTransfer();
+            convertedFiles.forEach((file) => dataTransfer.items.add(file));
+            setFiles(dataTransfer.files);
+        } else {
+            toast.error('Only image, pdf and text files are allowed!');
         }
         setIsDragging(false);
+
+        // setFiles(droppedFiles);
     };
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
